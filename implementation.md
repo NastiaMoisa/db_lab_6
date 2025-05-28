@@ -28,8 +28,8 @@ CREATE DATABASE IF NOT EXISTS flexform;
 USE flexform;
 
 CREATE TABLE IF NOT EXISTS forms (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL
+     id INT AUTO_INCREMENT PRIMARY KEY,
+     title VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS questions (
@@ -175,28 +175,27 @@ import java.sql.*;
 import java.util.*;
 
 public class FormDAO {
-    private Connection connection;
+    private final Connection connection;
 
     public FormDAO(Connection connection) {
         this.connection = connection;
     }
 
     public void insert(Form form) throws SQLException {
-        PreparedStatement stmt = connection.prepareStatement("INSERT INTO forms (title) VALUES (?)");
-        stmt.setString(1, form.getTitle());
-        stmt.executeUpdate();
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO forms (title) VALUES (?)");
+        statement.setString(1, form.getTitle());
+        statement.executeUpdate();
     }
 
     public List<Form> getAll() throws SQLException {
-        List<Form> forms = new ArrayList<>();
+        List<Form> formList = new ArrayList<>();
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT * FROM forms");
         while (rs.next()) {
-            forms.add(new Form(rs.getInt("id"), rs.getString("title")));
+            formList.add(new Form(rs.getInt("id"), rs.getString("title")));
         }
-        return forms;
+        return formList;
     }
-}
 ```
 
 ## Головний клас
@@ -210,13 +209,15 @@ import java.sql.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/flexform", "root", "password");
+        Connection connection = DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/flexform", "root", "password"
+        );
 
         FormDAO formDAO = new FormDAO(connection);
-        formDAO.insert(new Form("Опитування користувача"));
+        formDAO.insert(new Form("Анкета користувача"));
 
         for (Form form : formDAO.getAll()) {
-            System.out.println("Форма: " + form.getTitle());
+            System.out.println("Назва форми: " + form.getTitle());
         }
 
         connection.close();
@@ -225,32 +226,20 @@ public class Main {
 ```
 ## Запуск програми
 
-1. Я імпортував базу даних, виконавши SQL-скрипт `db/init.sql` у середовищі MySQL (через консоль або MySQL Workbench).
-2. Далі я скомпілював програму за допомогою команди:
-
-```bash
- javac -cp .:mysql-connector-java-8.0.33.jar src/**/*.java
-```
-
-(на Windows замість `:` потрібно використовувати `;`):
+1. Імпорт бази даних, виконавши SQL-скрипт `db/init.sql` у середовищі MySQL (через консоль або MySQL Workbench).
+2. Компіляція проєкту за допомогою команди (на Windows):
 
 ```bash
  javac -cp .;mysql-connector-java-8.0.33.jar src/**/*.java
 ```
 
-3. Після цього я запустив головний клас:
-
-```bash
- java -cp .:mysql-connector-java-8.0.33.jar src/Main
-```
-
-або на Windows:
+3. Запуск головного класу (на Windows):
 
 ```bash
  java -cp .;mysql-connector-java-8.0.33.jar src/Main
 ```
 
-4. Після запуску я побачив результати виконання в консолі, а також перевірив, що нові записи з'явилися в базі `flexform`.
+4. У терміналі має зʼявитися вивід із назвою форми, а у базі — новий запис у таблиці `forms`.
 ![](./images/456.jpg)
 
 
